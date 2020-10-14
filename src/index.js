@@ -1,5 +1,3 @@
-import createReducer from './createReducer';
+import { configureReducers } from './createReducer';
 
-export {
-    createReducer,
-}
+export default configureReducers;
