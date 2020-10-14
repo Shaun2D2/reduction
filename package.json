@@ -1,0 +1,40 @@
+{
+  "name": "redux-reduction",
+  "version": "1.0.0",
+  "description": "an easy way to abstract out redux boilerplate",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --mode=production"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Shaun2D2/reduction.git"
+  },
+  "keywords": [
+    "redux",
+    "react"
+  ],
+  "author": "Shaun Lobsinger",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Shaun2D2/reduction/issues"
+  },
+  "homepage": "https://github.com/Shaun2D2/reduction#readme",
+  "dependencies": {
+    "axios": "^0.20.0",
+    "moment": "^2.29.1",
+    "query-string": "^6.13.5",
+    "reselect": "^4.0.0",
+    "snake-case": "^3.0.3",
+    "uuid": "^8.3.1"
+  },
+  "devDependencies": {
+    "eslint": "^7.11.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-plugin-import": "^2.22.1",
+    "jest": "^26.5.3",
+    "webpack": "^5.1.0",
+    "webpack-cli": "^4.0.0"
+  }
+}
