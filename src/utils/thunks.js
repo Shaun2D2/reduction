@@ -4,8 +4,14 @@ import moment from 'moment';
 const preventExecution = (state, config, force) => 
   state.loading || (config.defer && moment(state.lastModified).isBefore(moment.add(config.defer)) && !force)
 
+  
+/**
+ * implement some local persistence here.
+ * 
+ * save to local store?
+ */
 const createThunks = (actions, resource, axios, config) => ({
-  loadCollection: (dispatch, getState) => async ({ query, force = false }) => {
+  loadCollection: (dispatch, getState) => async ({ query, force = false, data }) => {
     const state = getState()[resource];
 
     if (preventExecution(state, config, force)) return state.loading;
@@ -33,7 +39,7 @@ const createThunks = (actions, resource, axios, config) => ({
 
     return promise;
   },
-  loadSingle: (dispatch, getState) => async ({ id, query, force = false }) => {
+  loadSingle: (dispatch, getState) => async ({ id, query, force = false, data }) => {
     const state = getState()[resource];
 
     if (preventExecution(state, config, force)) return state.loading;
@@ -68,11 +74,13 @@ const createThunks = (actions, resource, axios, config) => ({
 
     config.onDelete();
 
+    if (config.optimistic) dispatch(actions.delete({ id }));
+
     const promise = axios.delete(stringifyUrl({ url: `/${resource}/${id}`, query }))
       .then(() => {
         config.onDeleted();
 
-        dispatch(actions.delete({ id }));
+        if (!config.optimistic) dispatch(actions.delete({ id }));
         dispatch(actions.loaded());
 
         return {};
@@ -92,12 +100,14 @@ const createThunks = (actions, resource, axios, config) => ({
 
     config.onSave();
 
+    if (config.optimistic) dispatch(config.transformResponse(actions.save(data)))
+
     const promise = axios.post(stringifyUrl({ url: `/${resource}`, query }), body)
       .then((response) => {
         const data = config.transformResponse(response.data);
         config.onSaved();
 
-        dispatch(actions.save(data));
+        if (!config.optimistic) dispatch(actions.save(data));
         dispatch(actions.loading(false));
       })
       .catch((e) => {
@@ -116,13 +126,15 @@ const createThunks = (actions, resource, axios, config) => ({
 
     config.onUpdate();
 
+    if (config.optimistic) dispatch(actions.save(data));
+
     const promise = axios.put(stringifyUrl({ url: `/${resource}`, query }), body)
       .then((response) => {
         const data = config.transformResponse(response.data);
 
         config.onUpdated();
 
-        dispatch(actions.save(data));
+        if (!config.optimistic) dispatch(actions.save(data));
         dispatch(actions.loading(false));
 
         return response;

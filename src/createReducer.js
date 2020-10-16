@@ -32,6 +32,8 @@ export const BASE_CONFIG = {
   onError: noop,
   attachToWindow: true,
   transformResponse: identity,
+  optimisticUpdates: false,
+  persistence: 'rest',
 };
 
 export const configureReducers = (rootConfig) => (reducerConfig) => {
@@ -123,4 +125,5 @@ const exampleConfig = {
   onCreated: noop,
   onError: noop,
   attachToWindow: true,
+  optimistic: true,
 }
