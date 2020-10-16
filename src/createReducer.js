@@ -2,6 +2,9 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable no-param-reassign */
 import { snakeCase } from 'snake-case';
+import identity from 'lodash/identity';
+import noop from 'lodash/noop';
+import set from 'lodash/set';
 import produce from 'immer';
 import moment from 'moment';
 
@@ -15,6 +18,20 @@ export const INITIAL_STATE = {
   loadedLast: null,
   lastModified: null,
   error: null,
+};
+
+export const BASE_CONFIG = {
+  onLoad: noop,
+  onLoaded: noop,
+  onDelete: noop,
+  onDeleted: noop,
+  onUpdate: noop,
+  onUpdated: noop,
+  onSave: noop,
+  onSaved: noop,
+  onError: noop,
+  attachToWindow: true,
+  transformResponse: identity,
 };
 
 export const configureReducers = (rootConfig) => (reducerConfig) => {
@@ -57,6 +74,10 @@ export const configureReducers = (rootConfig) => (reducerConfig) => {
         draft.loading = true;
 
         break;
+      case actions.loaded:
+        draft.loading = false;
+
+        break;
       case actions.delete:
         const removeIndex = draft.records.findIndex((record) => record.id === action.data.id);
 
@@ -74,10 +95,32 @@ export const configureReducers = (rootConfig) => (reducerConfig) => {
     }
   }, INITIAL_STATE);
 
-  return {
+  const fullReducer = {
     reducer,
     actionCreators,
     actions,
     thunks,
   };
+
+  if (config.attachToWindow) {
+    set(window, `reduction.${config.resource}`, fullReducer);
+  }
+
+  return fullReducer;
 };
+
+/**
+ * just a sample config for me to reference am i'm deving :) 
+ */
+const exampleConfig = {
+  resource: 'string',
+  defer: '',
+  onLoad: noop,
+  onLoaded: noop,
+  onDelete: noop,
+  onUpdate: noop,
+  onCreate: noop,
+  onCreated: noop,
+  onError: noop,
+  attachToWindow: true,
+}

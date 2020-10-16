@@ -1,101 +1,140 @@
 import stringifyUrl from 'query-string';
 import moment from 'moment';
 
+const preventExecution = (state, config, force) => 
+  state.loading || (config.defer && moment(state.lastModified).isBefore(moment.add(config.defer)) && !force)
+
 const createThunks = (actions, resource, axios, config) => ({
   loadCollection: (dispatch, getState) => async ({ query, force = false }) => {
-    try {
-      const state = getState()[resource];
+    const state = getState()[resource];
 
-      if (state.loading || (config.defer && moment(state.lastModified).isBefore(moment.add(config.defer)) && !force)) return state;
+    if (preventExecution(state, config, force)) return state.loading;
 
-      dispatch(actions.loading(true));
+    config.onLoad();
 
-      const response = await axios.get(stringifyUrl({ url: `/${resource}`, query }));
+    const promise = axios.get(stringifyUrl({ url: `/${resource}`, query }))
+      .then((response) => {
+        const data = config.transformResponse(response.data);
 
-      dispatch(actions.loadCollection(response.data));
-      dispatch(actions.loading(false));
+        dispatch(actions.loadCollection(data));
+        dispatch(actions.loaded());
 
-      return response;
-    } catch (e) {
-      dispatch(actions.error(e));
-      dispatch(actions.loading(false));
-    }
+        config.onLoaded();
+
+        return response;
+      })
+      .catch((e) => {
+        dispatch(actions.error(e));
+        dispatch(actions.loading(false));
+        config.onError(e);
+      });
+
+    dispatch(actions.loading(promise));
+
+    return promise;
   },
-  loadSingle: (dispatch, getState) => async ({ id, query }) => {
-    try {
-      const state = getState()[resource];
+  loadSingle: (dispatch, getState) => async ({ id, query, force = false }) => {
+    const state = getState()[resource];
 
-      if (state.loading || (config.defer && moment(state.lastModified).isBefore(moment.add(config.defer)) && !force)) return state;
+    if (preventExecution(state, config, force)) return state.loading;
 
-      dispatch(actions.loading(true));
+    config.onLoad();
 
-      const response = await axios.get(stringifyUrl({ url: `/${resource}/${id}`, query }));
+    const promise = axios.get(stringifyUrl({ url: `/${resource}/${id}`, query }))
+      .then((response) => {
+        const data = config.transformResponse(response.data);
 
-      dispatch(actions.loadSingle(response.data));
-      dispatch(actions.loading(false));
+        dispatch(actions.loadSingle(data));
+        dispatch(actions.loaded());
 
-      return response;
-    } catch (e) {
-      dispatch(actions.error(e));
-      dispatch(actions.loading(false));
-    }
+        config.onLoaded();
+
+        return response;
+      })
+      .catch((e) => {
+        dispatch(actions.error(e));
+
+        config.onError(e);
+      });
+
+    dispatch(actions.loading(promise));
+
+    return promise;
   },
-  delete: (dispatch, getState) => async ({ id, query }) => {
-    try {
-      const state = getState()[resource];
+  delete: (dispatch, getState) => async ({ id, query, force = false }) => {
+    const state = getState()[resource];
 
-      if (state.loading || (config.defer && moment(state.lastModified).isBefore(moment.add(config.defer)) && !force)) return state;
+    if (preventExecution(state, config, force)) return state.loading;
 
-      dispatch(actions.loading(true));
+    config.onDelete();
 
-      const response = await axios.delete(stringifyUrl({ url: `/${resource}/${id}`, query }));
+    const promise = axios.delete(stringifyUrl({ url: `/${resource}/${id}`, query }))
+      .then(() => {
+        config.onDeleted();
 
-      dispatch(actions.delete({ id }));
-      dispatch(actions.loading(false));
+        dispatch(actions.delete({ id }));
+        dispatch(actions.loaded());
 
-      return response;
-    } catch (e) {
-      dispatch(actions.error(e));
-      dispatch(actions.loading(false));
-    }
+        return {};
+      }).catch((e) => {
+        dispatch(actions.error(e));
+        config.onError(e);
+      });
+
+    dispatch(actions.loading(promise));
+
+    return promise;
   },
-  save: (dispatch, getState) => async ({ body, query }) => {
-    try {
-      const state = getState()[resource];
+  save: (dispatch, getState) => async ({ body, query, force = false }) => {
+    const state = getState()[resource];
 
-      if (state.loading || (config.defer && moment(state.lastModified).isBefore(moment.add(config.defer)) && !force)) return state;
+    if (preventExecution(state, config, force)) return state.loading;
 
-      dispatch(actions.loading(true));
+    config.onSave();
 
-      const response = await axios.post(stringifyUrl({ url: `/${resource}`, query }), body);
+    const promise = axios.post(stringifyUrl({ url: `/${resource}`, query }), body)
+      .then((response) => {
+        const data = config.transformResponse(response.data);
+        config.onSaved();
 
-      dispatch(actions.save(response.data));
-      dispatch(actions.loading(false));
+        dispatch(actions.save(data));
+        dispatch(actions.loading(false));
+      })
+      .catch((e) => {
+        dispatch(actions.error(e));
+        config.onError(e);
+      });
 
-      return response;
-    } catch (e) {
-      dispatch(actions.error(e));
-      dispatch(actions.loading(false));
-    }
+    dispatch(actions.loading(promise));
+
+    return promise;
   },
-  update: (dispatch, getState) => async ({ body, query }) => {
-    try {
-      const state = getState()[resource];
+  update: (dispatch, getState) => async ({ body, query, force = false }) => {
+    const state = getState()[resource];
 
-      if (state.loading || (config.defer && moment(state.lastModified).isBefore(moment.add(config.defer)) && !force)) return state;
+    if (preventExecution(state, config, force)) return state.loading;
 
-      dispatch(actions.loading(true));
+    config.onUpdate();
 
-      const response = await axios.put(stringifyUrl({ url: `/${resource}`, query }), body);
+    const promise = axios.put(stringifyUrl({ url: `/${resource}`, query }), body)
+      .then((response) => {
+        const data = config.transformResponse(response.data);
 
-      dispatch(actions.save(response.data));
-      dispatch(actions.loading(false));
+        config.onUpdated();
 
-      return response;
-    } catch (e) {
-      dispatch(actions.error(e));
-      dispatch(actions.loading(false));
-    }
+        dispatch(actions.save(data));
+        dispatch(actions.loading(false));
+
+        return response;
+      })
+      .catch((e) => {
+        dispatch(actions.error(e));
+      });
+
+
+    dispatch(actions.loading(promise));
+
+    return promise;
   },
 });
 

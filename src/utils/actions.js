@@ -5,7 +5,8 @@ export const createActions = (resource) => ({
   update: `${resource}/UPDATE`,
   delete: `${resource}/DELETE`,
   error: `${resource}/ERROR`,
-  loading: `${resource}/PENDING`,
+  loading: `${resource}/LOADING`,
+  loaded: `${resource}/LOADED`,
 });
 
 export const createActionCreators = (actions) => ({
@@ -15,5 +16,6 @@ export const createActionCreators = (actions) => ({
   update: (data) => ({ type: actions.update, data }),
   delete: (data) => ({ type: actions.delete, data }),
   loading: (data) => ({ type: actions.loading, data }),
+  loaded: () => ({ type: actions.loaded }),
   error: (data) => ({ type: actions.error, data }),
 });
