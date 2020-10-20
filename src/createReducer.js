@@ -58,24 +58,24 @@ export const configureReducers = (rootConfig) => (reducerConfig) => {
   const reducer = produce((draft, action) => {
     switch (action.type) {
       case actions.loadCollection:
-        draft.records.concat(action.data);
+        draft.collection.concat(action.data);
         draft.lastModified = moment();
         draft.loaded.concat(action.data.map((item) => `${item.id}`)).filter((item, index, array) => array.indexOf(item) === index);
 
         break;
       case actions.loadSingle:
       case actions.create:
-        draft.records.push(action.data);
+        draft.collection.push(action.data);
         draft.lastModified = moment();
         draft.loaded.push(action.data.id);
         draft.loaded.filter((item, index, array) => array.indexOf(item) === index);
 
         break;
       case actions.update:
-        const index = draft.records.findIndex((record) => record.id === action.data.id);
+        const index = draft.collection.findIndex((record) => record.id === action.data.id);
 
         if (index) {
-          draft.records.splice(index, 1, action.data);
+          draft.collection.splice(index, 1, action.data);
           draft.lastModified = moment();
         }
 
@@ -89,7 +89,7 @@ export const configureReducers = (rootConfig) => (reducerConfig) => {
 
         break;
       case actions.delete:
-        const removeIndex = draft.records.findIndex((record) => record.id === action.data.id);
+        const removeIndex = draft.collection.findIndex((record) => record.id === action.data.id);
 
         if (index) {
           draft.splice(removeIndex, 1);
