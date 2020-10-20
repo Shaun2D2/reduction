@@ -1,6 +1,6 @@
 {
-  "name": "redux-reduction",
-  "version": "1.0.0",
+  "name": "@jolobo/redux-reduction",
+  "version": "0.0.1",
   "description": "an easy way to abstract out redux boilerplate",
   "main": "dist/bundle.js",
   "scripts": {

@@ -9,6 +9,7 @@ import produce from 'immer';
 import moment from 'moment';
 
 import { createActions, createActionCreators } from './utils/actions';
+import deafultClient from './utils/defaultClient';
 import createThunks from './utils/thunks';
 
 export const INITIAL_STATE = {
@@ -34,18 +35,25 @@ export const BASE_CONFIG = {
   transformResponse: identity,
   optimisticUpdates: false,
   persistence: 'rest',
+  axios: {},
 };
 
 export const configureReducers = (rootConfig) => (reducerConfig) => {
   const config = {
     ...rootConfig,
     ...reducerConfig,
+    ...BASE_CONFIG,
     resource: snakeCase(reducerConfig.resource.toUpperCase()),
   };
 
+  const client = deafultClient({ baseURL: config.baseURL, config: config.axios});
   const actions = createActions(config.resource);
   const actionCreators = createActionCreators(actions, config);
-  const thunks = createThunks(actionCreators);
+  const thunks = createThunks({
+    actions: actionCreators,
+    client,
+    config,
+  });
 
   const reducer = produce((draft, action) => {
     switch (action.type) {
@@ -110,20 +118,3 @@ export const configureReducers = (rootConfig) => (reducerConfig) => {
 
   return fullReducer;
 };
-
-/**
- * just a sample config for me to reference am i'm deving :) 
- */
-const exampleConfig = {
-  resource: 'string',
-  defer: '',
-  onLoad: noop,
-  onLoaded: noop,
-  onDelete: noop,
-  onUpdate: noop,
-  onCreate: noop,
-  onCreated: noop,
-  onError: noop,
-  attachToWindow: true,
-  optimistic: true,
-}
