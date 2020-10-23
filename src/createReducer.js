@@ -10,6 +10,7 @@ import moment from 'moment';
 
 import { createActions, createActionCreators } from './utils/actions';
 import deafultClient from './utils/defaultClient';
+import createSelectors from './createSelectors';
 import createThunks from './utils/thunks';
 
 export const INITIAL_STATE = {
@@ -105,11 +106,15 @@ export const configureReducers = (rootConfig) => (reducerConfig) => {
     }
   }, INITIAL_STATE);
 
+  const selectors = createSelectors({ resource: config.resource });
+
   const fullReducer = {
     reducer,
     actionCreators,
     actions,
     thunks,
+    client,
+    selectors,
   };
 
   if (config.attachToWindow) {
