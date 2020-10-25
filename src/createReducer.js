@@ -39,12 +39,23 @@ export const BASE_CONFIG = {
   axios: {},
 };
 
+
 export const configureReducers = (rootConfig) => (reducerConfig) => {
   const config = {
     ...rootConfig,
     ...reducerConfig,
     ...BASE_CONFIG,
     resource: snakeCase(reducerConfig.resource.toUpperCase()),
+  };
+
+  const setLocalStorage = (state) => window.localStorage.setItem(`breedfit.${config.resource}`, JSON.stringify(state));
+
+  const getInitialState = () => {
+    const storage = window.localStorage.getItem(`breedfit.${config.resource}`);
+
+    if (config.localStorage && window.localStorage.getItem(`breedfit.${config.resource}`)) return JSON.parse(storage);
+
+    return INITIAL_STATE;
   };
 
   const client = deafultClient({ baseURL: config.baseURL, config: config.axios});
@@ -63,6 +74,8 @@ export const configureReducers = (rootConfig) => (reducerConfig) => {
         draft.lastModified = moment();
         draft.loaded.concat(action.data.map((item) => `${item.id}`)).filter((item, index, array) => array.indexOf(item) === index);
 
+        if (config.localStorage) setLocalStorage(draft);
+
         break;
       case actions.loadSingle:
       case actions.create:
@@ -70,6 +83,8 @@ export const configureReducers = (rootConfig) => (reducerConfig) => {
         draft.lastModified = moment();
         draft.loaded.push(action.data.id);
         draft.loaded.filter((item, index, array) => array.indexOf(item) === index);
+
+        if (config.localStorage) setLocalStorage( draft);
 
         break;
       case actions.update:
@@ -80,13 +95,19 @@ export const configureReducers = (rootConfig) => (reducerConfig) => {
           draft.lastModified = moment();
         }
 
+        if (config.localStorage) setLocalStorage( draft);
+
         break;
       case actions.loading:
         draft.loading = true;
 
+        if (config.localStorage) setLocalStorage( draft);
+
         break;
       case actions.loaded:
         draft.loading = false;
+
+        if (config.localStorage) setLocalStorage( draft);
 
         break;
       case actions.delete:
@@ -98,13 +119,15 @@ export const configureReducers = (rootConfig) => (reducerConfig) => {
           draft.loaded.filter((item) => item !== action.data.id);
         }
 
+        if (config.localStorage) setLocalStorage( draft);
+
         break;
       case actions.error:
         draft.error = action.data;
 
         break;
     }
-  }, INITIAL_STATE);
+  }, getInitialState());
 
   const selectors = createSelectors({ resource: config.resource });
 
