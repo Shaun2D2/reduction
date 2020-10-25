@@ -33,13 +33,16 @@ const createThunks = ({ actions, client, config }) => ({
         config.onError(e);
 
         Promise.reject(e);
+      })
+      .finally(() => {
+        dispatch(actions.loaded());
       });
 
     dispatch(actions.loading(promise));
 
     return promise;
   },
-  loadSingle: ({ id, query, force = false, data,}) => async (dispatch, getState) => {
+  loadSingle: ({ id, query, force = false, data }) => async (dispatch, getState) => {
     const state = getState()[config.resource];
 
     if (preventExecution(state, config, force)) return state.loading;
@@ -63,6 +66,9 @@ const createThunks = ({ actions, client, config }) => ({
         config.onError(e);
 
         return Promise.reject(e);
+      })
+      .finally(() => {
+        dispatch(actions.loaded());
       });
 
     dispatch(actions.loading(promise));
@@ -91,6 +97,9 @@ const createThunks = ({ actions, client, config }) => ({
         config.onError(e);
 
         return Promise.reject(e);
+      })
+      .finally(() => {
+        dispatch(actions.loaded());
       });
 
     dispatch(actions.loading(promise));
@@ -116,9 +125,13 @@ const createThunks = ({ actions, client, config }) => ({
       })
       .catch((e) => {
         dispatch(actions.error(e));
+        dispatch(actions.loading(false));
         config.onError(e);
 
         return Promise.reject(e);
+      })
+      .finally(() => {
+        dispatch(actions.loaded());
       });
 
     dispatch(actions.loading(promise));
@@ -149,6 +162,9 @@ const createThunks = ({ actions, client, config }) => ({
         dispatch(actions.error(e));
 
         return Promise.reject(e);
+      })
+      .finally(() => {
+        dispatch(actions.loaded());
       });
 
     dispatch(actions.loading(promise));
