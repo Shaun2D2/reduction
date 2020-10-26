@@ -4,7 +4,7 @@
   "description": "an easy way to abstract out redux boilerplate",
   "main": "dist/bundle.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npx jest",
     "dev": "webpack --mode=development --watch",
     "build": "webpack --mode=production"
   },
@@ -36,7 +36,7 @@
     "eslint": "^7.11.0",
     "eslint-config-airbnb-base": "^14.2.0",
     "eslint-plugin-import": "^2.22.1",
-    "jest": "^26.5.3",
+    "jest": "^26.6.1",
     "webpack": "^5.1.0",
     "webpack-cli": "^4.0.0"
   }
