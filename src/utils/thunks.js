@@ -18,14 +18,14 @@ const createThunks = ({ actions, client, config }) => ({
 
     const promise = client.get(stringifyUrl({ url: `/${config.resource}`, query }))
       .then((response) => {
-        const data = config.transformResponse(response.data);
+        const transformedData = config.transformResponse(response.data);
 
-        dispatch(actions.loadCollection(data));
+        dispatch(actions.loadCollection(transformedData));
         dispatch(actions.loaded());
 
         config.onLoaded();
 
-        return Promise.resolve(response);
+        return transformedData;
       })
       .catch((e) => {
         dispatch(actions.error(e));
@@ -42,7 +42,7 @@ const createThunks = ({ actions, client, config }) => ({
 
     return promise;
   },
-  loadSingle: ({ id, query, force = false, data }) => async (dispatch, getState) => {
+  loadSingle: ({ id, query, force = false }) => async (dispatch, getState) => {
     const state = getState()[config.resource];
 
     if (preventExecution(state, config, force)) return state.loading;
@@ -51,14 +51,14 @@ const createThunks = ({ actions, client, config }) => ({
 
     const promise = client.get(stringifyUrl({ url: `/${config.resource}/${id}`, query }))
       .then((response) => {
-        const data = config.transformResponse(response.data);
+        const transformedData = config.transformResponse(response.data);
 
-        dispatch(actions.loadSingle(data));
+        dispatch(actions.loadSingle(transformedData));
         dispatch(actions.loaded());
 
         config.onLoaded();
 
-        return Promise.resolve(response);
+        return transformedData;
       })
       .catch((e) => {
         dispatch(actions.error(e));
@@ -67,8 +67,10 @@ const createThunks = ({ actions, client, config }) => ({
 
         return Promise.reject(e);
       })
-      .finally(() => {
+      .finally((data) => {
         dispatch(actions.loaded());
+
+        return Promise.resolve(data);
       });
 
     dispatch(actions.loading(promise));
@@ -91,7 +93,7 @@ const createThunks = ({ actions, client, config }) => ({
         if (!config.optimistic) dispatch(actions.delete({ id }));
         dispatch(actions.loaded());
 
-        return Promise.resolve({});
+        return {};
       }).catch((e) => {
         dispatch(actions.error(e));
         config.onError(e);
@@ -121,7 +123,7 @@ const createThunks = ({ actions, client, config }) => ({
         if (!config.optimistic) dispatch(actions.create(data));
         dispatch(actions.loading(false));
 
-        Promise.resolve(data);
+        return data;
       })
       .catch((e) => {
         dispatch(actions.error(e));
